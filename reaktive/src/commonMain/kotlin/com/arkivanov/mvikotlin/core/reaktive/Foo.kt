@@ -1,11 +1,10 @@
 package com.arkivanov.mvikotlin.core.reaktive
 
 import com.arkivanov.mvikotlin.base.store.MviReducer
+import com.arkivanov.mvikotlin.base.store.MviStore
 import com.arkivanov.mvikotlin.base.store.MviStoreFactory
 import com.arkivanov.mvikotlin.core.reaktive.store.MviReaktiveBootstrapper
 import com.arkivanov.mvikotlin.core.reaktive.store.MviReaktiveExecutor
-import com.arkivanov.mvikotlin.core.reaktive.store.MviReaktiveStore
-import com.arkivanov.mvikotlin.core.reaktive.store.asReaktive
 import com.badoo.reaktive.disposable.Disposable
 
 sealed class Intent
@@ -39,14 +38,12 @@ object Reducer : MviReducer<State, Result> {
 }
 
 fun foo(factory: MviStoreFactory) {
-    val store: MviReaktiveStore<Intent, State, Label> =
-        factory
-            .create(
-                initialState = State(),
-                bootstrapper = Bootstrapper(),
-                intentToAction = Action::ExecuteIntent,
-                executorFactory = ::Executor,
-                reducer = Reducer
-            )
-            .asReaktive()
+    val store: MviStore<State, Intent, Label> =
+        factory.create(
+            initialState = State(),
+            bootstrapper = Bootstrapper(),
+            intentToAction = Action::ExecuteIntent,
+            executorFactory = ::Executor,
+            reducer = Reducer
+        )
 }
