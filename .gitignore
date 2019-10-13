@@ -3,4 +3,10 @@
 /local.properties
 .idea
 /build
-
+/classes
+/out
+.DS_Store*
+*/build
+*/node_modules
+*/package-lock.json
+*.hprof

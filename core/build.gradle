@@ -1,0 +1,12 @@
+setupMultiplatformProject(project)
+
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation 'com.badoo.reaktive:utils:1.0.0'
+                api project(':base')
+            }
+        }
+    }
+}
