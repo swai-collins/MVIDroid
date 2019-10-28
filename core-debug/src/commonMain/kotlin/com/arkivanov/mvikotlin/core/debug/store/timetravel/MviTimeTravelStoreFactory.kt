@@ -1,11 +1,10 @@
-package com.arkivanov.mvidroid.store.timetravel
+package com.arkivanov.mvikotlin.core.debug.store.timetravel
 
-import com.arkivanov.mvidroid.store.MviStore
-import com.arkivanov.mvidroid.store.MviStoreFactory
-import com.arkivanov.mvidroid.store.component.MviBootstrapper
-import com.arkivanov.mvidroid.store.component.MviExecutor
-import com.arkivanov.mvidroid.store.component.MviReducer
-import com.arkivanov.mvikotlin.core.debug.store.timetravel.MviTimeTravelStore
+import com.arkivanov.mvikotlin.base.store.MviBootstrapper
+import com.arkivanov.mvikotlin.base.store.MviExecutor
+import com.arkivanov.mvikotlin.base.store.MviReducer
+import com.arkivanov.mvikotlin.base.store.MviStore
+import com.arkivanov.mvikotlin.base.store.MviStoreFactory
 
 /**
  * An implementation of [MviStoreFactory] that creates Stores with time travel functionality.
@@ -31,5 +30,5 @@ object MviTimeTravelStoreFactory : MviStoreFactory {
             executorFactory = executorFactory,
             reducer = reducer
         )
-            .also { MviTimeTravelController.attachStore(it, name) }
+//            .also { MviTimeTravelController.attachStore(it, name) }
 }

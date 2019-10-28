@@ -3,7 +3,7 @@ package com.arkivanov.mvikotlin.core.store
 import com.arkivanov.mvikotlin.base.observer.mviObserver
 import com.arkivanov.mvikotlin.base.store.MviBootstrapper
 import com.arkivanov.mvikotlin.base.store.MviExecutor
-import com.arkivanov.mvikotlin.base.store.MviReducer
+import com.arkivanov.mvikotlin.base.store.mviReducer
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
@@ -198,9 +198,7 @@ class MviDefaultStoreTest {
             bootstrapper = bootstrapper,
             intentToAction = { it },
             executor = executor,
-            reducer = object : MviReducer<String, String> {
-                override fun String.reduce(result: String): String = result
-            }
+            reducer = mviReducer { it }
         )
 
     private companion object {
