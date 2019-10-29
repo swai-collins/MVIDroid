@@ -69,6 +69,18 @@ internal class MviTimeTravelStore<out State : Any, in Intent : Any, out Label : 
         }
     }
 
+    fun addEventObserver(observer: MviObserver<MviTimeTravelEvent>) {
+        doIfNotDisposed {
+            eventObservers += observer
+        }
+    }
+
+    fun removeEventObserver(observer: MviObserver<MviTimeTravelEvent>) {
+        doIfNotDisposed {
+            eventObservers -= observer
+        }
+    }
+
     override fun accept(intent: Intent) {
         doIfNotDisposed {
             onEvent(MviEventType.INTENT, intent)
