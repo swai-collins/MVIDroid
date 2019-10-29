@@ -77,7 +77,7 @@ internal class MviTimeTravelStore<out State : Any, in Intent : Any, out Label : 
 
     fun restoreState() {
         doIfNotDisposed {
-            stateSubject.onNext(state)
+            stateSubject.onNext(internalState.value)
         }
     }
 

@@ -1,14 +1,10 @@
 package com.arkivanov.mvikotlin.core.debug.store.timetravel
 
-import com.arkivanov.mvikotlin.base.store.MviBootstrapper
-import com.arkivanov.mvikotlin.base.store.MviReducer
-import com.arkivanov.mvikotlin.base.store.mviReducer
+import com.arkivanov.mvikotlin.core.debug.store.MviEventType
 import com.arkivanov.mvikotlin.core.debug.store.test.TestExecutor
-import com.arkivanov.mvikotlin.core.debug.store.test.TestObserver
+import com.arkivanov.mvikotlin.core.debug.store.test.test
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class MviTimeTravelStoreProcessTest {
@@ -16,231 +12,152 @@ class MviTimeTravelStoreProcessTest {
     private val env = MviTimeTravelStoreTestingEnvironment()
 
     @Test
-    fun intentToAction_called_WHEN_debug_intent() {
-        lateinit var action: String
-        val store =
-            store(
-                intentToAction = {
-                    action = it
-                    it
-                }
-            )
+    fun valid_intent_event_emitted_WHEN_intent_sent() {
+        val store = env.store()
+        val events = store.eventOutput.test()
 
-        store.eventDebugger.debug(env.createIntentEvent())
+        store.accept("intent")
 
-        assertEquals("intent", action)
+        assertEquals(listOf(env.createIntentEvent()), events.values)
     }
 
     @Test
-    fun executor_not_called_WHEN_debug_intent() {
-        var isCalled = false
-        val executor = TestExecutor { isCalled = true }
-        val store = store(executorFactory = { executor })
+    fun valid_action_event_emitted_WHEN_precess_intent() {
+        val store = env.store(intentToAction = { if (it == "intent") "action" else "" })
+        val events = store.eventOutput.test()
 
-        store.eventDebugger.debug(env.createIntentEvent())
+        store.eventProcessor.process(MviEventType.INTENT, "intent")
 
-        assertFalse(isCalled)
+        assertEquals(listOf(env.createActionEvent()), events.values)
     }
 
     @Test
-    fun new_executor_called_WHEN_debug_action() {
+    fun executor_executed_with_valid_action_WHEN_process_action() {
         lateinit var action: String
-        val executors = ExecutorQueue(TestExecutor(), TestExecutor { action = it })
-        val store = store(executorFactory = executors::next)
+        val store = env.store(executorFactory = { TestExecutor { action = it } })
 
-        store.eventDebugger.debug(env.createActionEvent())
+        store.eventProcessor.process(MviEventType.ACTION, "action")
 
         assertEquals("action", action)
     }
 
     @Test
-    fun old_executor_not_called_WHEN_debug_action() {
-        var isCalled = false
-        val executors = ExecutorQueue(TestExecutor { isCalled = true }, TestExecutor())
-        val store = store(executorFactory = executors::next)
+    fun valid_result_event_emitted_WHEN_executor_dispatched_result() {
+        val executor = TestExecutor()
+        val store = env.store(executorFactory = { executor })
+        val events = store.eventOutput.test()
 
-        store.eventDebugger.debug(env.createActionEvent())
+        executor.resultConsumer("result")
 
-        assertFalse(isCalled)
+        assertEquals(listOf(env.createResultEvent()), events.values)
     }
 
     @Test
-    fun new_executor_reads_original_state_WHEN_debug_action() {
-        val newExecutor = TestExecutor()
-        val executors = ExecutorQueue(TestExecutor(), newExecutor)
-        val store = store(executorFactory = executors::next)
+    fun valid_state_events_emitted_WHEN_process_result() {
+        val store = env.store()
+        val events = store.eventOutput.test()
 
-        store.eventDebugger.debug(env.createActionEvent(state = "old_state"))
-        assertEquals("old_state", newExecutor.stateSupplier())
+        store.eventProcessor.process(MviEventType.RESULT, "result1")
+        store.eventProcessor.process(MviEventType.RESULT, "result2")
+
+        assertEquals(
+            listOf(
+                env.createStateEvent(value = "state_result1", state = "state"),
+                env.createStateEvent(value = "state_result1_result2", state = "state_result1")
+            ),
+            events.values
+        )
     }
 
     @Test
-    fun new_executor_reads_new_state_WHEN_debug_action_and_result_dispatched_by_new_executor() {
-        val newExecutor = TestExecutor()
-        val executors = ExecutorQueue(TestExecutor(), newExecutor)
-        val store = store(executorFactory = executors::next)
+    fun executor_reads_new_state_WHEN_process_result() {
+        val executor = TestExecutor()
+        val store = env.store(executorFactory = { executor })
 
-        store.eventDebugger.debug(env.createActionEvent())
-        newExecutor.resultConsumer("result")
+        store.eventProcessor.process(MviEventType.RESULT, "result1")
+        store.eventProcessor.process(MviEventType.RESULT, "result2")
 
-        assertEquals("state_result", newExecutor.stateSupplier())
+        assertEquals("state_result1_result2", executor.stateSupplier())
     }
 
     @Test
-    fun old_executor_reads_old_state_WHEN_debug_action_and_result_dispatched_by_new_executor() {
-        val oldExecutor = TestExecutor()
-        val newExecutor = TestExecutor()
-        val executors = ExecutorQueue(oldExecutor, newExecutor)
-        val store = store(executorFactory = executors::next)
+    fun store_state_not_emitted_WHEN_process_result() {
+        val store = env.store()
+        val states = store.stateOutput.test(skipFirstValue = true)
 
-        store.eventDebugger.debug(env.createActionEvent())
-        newExecutor.resultConsumer("result")
+        store.eventProcessor.process(MviEventType.RESULT, "result")
 
-        assertEquals("state", oldExecutor.stateSupplier())
+        assertTrue(states.values.isEmpty())
     }
 
     @Test
-    fun state_not_emitted_WHEN_debug_action_and_result_dispatched_by_new_executor() {
-        val newExecutor = TestExecutor()
-        val executors = ExecutorQueue(TestExecutor(), newExecutor)
-        val store = store(executorFactory = executors::next)
-        val stateObserver = TestObserver<String>(skipFirstValue = true)
-        store.stateOutput.subscribe(stateObserver)
+    fun store_state_not_changed_WHEN_process_result() {
+        val store = env.store()
 
-        store.eventDebugger.debug(env.createActionEvent())
-        newExecutor.resultConsumer("result")
-
-        assertTrue(stateObserver.values.isEmpty())
-    }
-
-    @Test
-    fun state_not_changed_WHEN_debug_action_and_result_dispatched_by_new_executor() {
-        val newExecutor = TestExecutor()
-        val executors = ExecutorQueue(TestExecutor(), newExecutor)
-        val store = store(executorFactory = executors::next)
-
-        store.eventDebugger.debug(env.createActionEvent())
-        newExecutor.resultConsumer("result")
+        store.eventProcessor.process(MviEventType.RESULT, "result")
 
         assertEquals("state", store.state)
     }
 
     @Test
-    fun label_not_emitted_WHEN_debug_action_and_label_published_by_new_executor() {
-        val newExecutor = TestExecutor()
-        val executors = ExecutorQueue(TestExecutor(), newExecutor)
-        val store = store(executorFactory = executors::next)
-        val labelObserver = TestObserver<String>()
-        store.labelOutput.subscribe(labelObserver)
+    fun valid_state_emitted_WHEN_process_state() {
+        val store = env.store()
+        val states = store.stateOutput.test(skipFirstValue = true)
 
-        store.eventDebugger.debug(env.createActionEvent())
-        newExecutor.labelConsumer("label")
+        store.eventProcessor.process(MviEventType.STATE, "new state")
 
-        assertTrue(labelObserver.values.isEmpty())
+        assertEquals(listOf("new state"), states.values)
     }
 
     @Test
-    fun reducer_called_with_original_state_and_result_WHEN_debug_result() {
-        lateinit var state: String
-        lateinit var result: String
+    fun valid_state_WHEN_process_state() {
+        val store = env.store()
 
-        val store =
-            store(
-                reducer = mviReducer {
-                    state = this
-                    result = it
-                    this
-                }
-            )
+        store.eventProcessor.process(MviEventType.STATE, "new state")
 
-        store.eventDebugger.debug(env.createResultEvent(state = "old_state"))
-
-        assertEquals("old_state", state)
-        assertEquals("result", result)
+        assertEquals("new state", store.state)
     }
 
     @Test
-    fun old_executor_reads_main_state_WHEN_debug_result() {
-        val oldExecutor = TestExecutor()
-        val executors = ExecutorQueue(oldExecutor, TestExecutor())
-        val store = store(executorFactory = executors::next)
+    fun valid_label_event_emitted_WHEN_executor_published_label() {
+        val executor = TestExecutor()
+        val store = env.store(executorFactory = { executor })
+        val events = store.eventOutput.test()
 
-        store.eventDebugger.debug(env.createResultEvent(state = "old_state"))
+        executor.labelConsumer("label")
 
-        assertEquals("state", oldExecutor.stateSupplier())
+        assertEquals(listOf(env.createLabelEvent()), events.values)
     }
 
     @Test
-    fun state_not_emitted_WHEN_debug_result() {
-        val executors = ExecutorQueue(TestExecutor(), TestExecutor())
-        val store = store(executorFactory = executors::next)
-        val stateObserver = TestObserver<String>(skipFirstValue = true)
-        store.stateOutput.subscribe(stateObserver)
+    fun label_not_emitted_WHEN_executor_published_label() {
+        val executor = TestExecutor()
+        val store = env.store(executorFactory = { executor })
+        val labels = store.labelOutput.test()
 
-        store.eventDebugger.debug(env.createResultEvent(state = "old_state"))
+        executor.labelConsumer("label")
 
-        assertTrue(stateObserver.values.isEmpty())
+        assertTrue(labels.values.isEmpty())
     }
 
     @Test
-    fun state_not_changed_WHEN_debug_result() {
-        val executors = ExecutorQueue(TestExecutor(), TestExecutor())
-        val store = store(executorFactory = executors::next)
+    fun label_emitted_WHEN_process_label() {
+        val store = env.store()
+        val labels = store.labelOutput.test()
 
-        store.eventDebugger.debug(env.createResultEvent(state = "old_state"))
+        store.eventProcessor.process(MviEventType.LABEL, "label")
 
-        assertEquals("state", store.state)
+        assertEquals(listOf("label"), labels.values)
     }
 
     @Test
-    fun exception_WHEN_debug_state() {
-        val store = store()
+    fun restored_actual_state_WHEN_process_result_AND_precess_state() {
+        val store = env.store()
 
-        assertFailsWith<Exception> {
-            store.eventDebugger.debug(env.createStateEvent())
-        }
-    }
+        store.eventProcessor.process(MviEventType.RESULT, "result")
+        store.eventProcessor.process(MviEventType.STATE, "state")
+        store.restoreState()
 
-    @Test
-    fun label_emitted_WHEN_debug_label() {
-        val store = store()
-        val labelObserver = TestObserver<String>()
-        store.labelOutput.subscribe(labelObserver)
-
-        store.eventDebugger.debug(env.createLabelEvent())
-
-        assertEquals(listOf("label"), labelObserver.values)
-    }
-
-    private fun store(
-        init: Boolean = true,
-        bootstrapper: MviBootstrapper<String>? = null,
-        intentToAction: (String) -> String = { it },
-        executorFactory: () -> TestExecutor = { TestExecutor() },
-        reducer: MviReducer<String, String> = mviReducer { "${this}_$it" }
-    ): MviTimeTravelStore<String, String, String, String, String> {
-        val store =
-            MviTimeTravelStore(
-                name = "store",
-                initialState = "state",
-                bootstrapper = bootstrapper,
-                intentToAction = intentToAction,
-                executorFactory = executorFactory,
-                reducer = reducer
-            )
-
-        if (init) {
-            store.init()
-        }
-
-        return store
-    }
-
-    private class ExecutorQueue(
-        private vararg val executors: TestExecutor
-    ) {
-        private var index = 0
-
-        fun next(): TestExecutor = executors[index++]
+        assertEquals("state_result", store.state)
     }
 }
