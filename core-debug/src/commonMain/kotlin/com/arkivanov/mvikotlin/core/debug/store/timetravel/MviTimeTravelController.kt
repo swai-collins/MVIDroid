@@ -1,7 +1,8 @@
 package com.arkivanov.mvikotlin.core.debug.store.timetravel
 
-import com.arkivanov.mvikotlin.base.observable.mviObserver
 import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
+import com.arkivanov.mvikotlin.base.observable.MviObservable
+import com.arkivanov.mvikotlin.base.observable.mviObserver
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.arkivanov.mvikotlin.core.debug.store.MviEventType
 import com.badoo.reaktive.utils.atomic.AtomicReference
@@ -23,7 +24,7 @@ object MviTimeTravelController {
     private val statesSubject = MviBehaviorSubject(MviTimeTravelState.IDLE)
     private val eventsSubject = MviBehaviorSubject(MviTimeTravelEvents())
     private val postponedEvents = ArrayList<MviTimeTravelEvent>()
-    private val stores = AtomicReference<Map<String, MviTimeTravelStore<*, *, *, *, *>>>(emptyMap())
+    private val stores = AtomicReference<Map<String, MviTimeTravelStore<*, *, *>>>(emptyMap())
 
     /**
      * Returns current time travel state, see [MviTimeTravelState] for more information
@@ -35,8 +36,18 @@ object MviTimeTravelController {
      */
     val events: MviTimeTravelEvents get() = eventsSubject.value
 
-    internal fun <State : Any, Intent : Any, Action : Any, Result : Any, Label : Any> attachStore(
-        store: MviTimeTravelStore<State, Intent, Action, Result, Label>,
+    /**
+     * Observable of time travel state, see [MviTimeTravelState] for more information
+     */
+    val stateOutput: MviObservable<MviTimeTravelState> = statesSubject
+
+    /**
+     * Obserable of time travel events, see [MviTimeTravelEvents] for more information
+     */
+    val eventsOutput: MviObservable<MviTimeTravelEvents> = eventsSubject
+
+    internal fun <State : Any, Intent : Any, Action : Any> attachStore(
+        store: MviTimeTravelStore<State, Intent, Action>,
         storeName: String
     ) {
         assertOnMainThread()
@@ -149,7 +160,7 @@ object MviTimeTravelController {
             statesSubject.onNext(MviTimeTravelState.IDLE)
 
             if (oldState !== MviTimeTravelState.RECORDING) {
-                stores.value.values.forEach(MviTimeTravelStore<*, *, *, *, *>::restoreState)
+                stores.value.values.forEach(MviTimeTravelStore<*, *, *>::restoreState)
                 postponedEvents.forEach { process(it) }
             }
 

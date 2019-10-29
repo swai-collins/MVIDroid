@@ -29,9 +29,9 @@ internal class MviTimeTravelStoreTestingEnvironment {
         intentToAction: (String) -> String = { it },
         executorFactory: () -> TestExecutor = { TestExecutor() },
         reducer: MviReducer<String, String> = mviReducer { "${this}_$it" }
-    ): MviTimeTravelStore<String, String, String, String, String> {
+    ): MviTimeTravelStoreImpl<String, String, String, String, String> {
         val store =
-            MviTimeTravelStore(
+            MviTimeTravelStoreImpl(
                 name = "store",
                 initialState = "state",
                 bootstrapper = bootstrapper,

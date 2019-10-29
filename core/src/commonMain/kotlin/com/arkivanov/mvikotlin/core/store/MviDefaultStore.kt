@@ -10,7 +10,7 @@ import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 
-class MviDefaultStore<out State : Any, in Intent : Any, out Label : Any, Action : Any, Result : Any>(
+internal class MviDefaultStore<out State : Any, in Intent : Any, out Label : Any, Action : Any, Result : Any>(
     initialState: State,
     private val bootstrapper: MviBootstrapper<Action>?,
     private val intentToAction: (Intent) -> Action,

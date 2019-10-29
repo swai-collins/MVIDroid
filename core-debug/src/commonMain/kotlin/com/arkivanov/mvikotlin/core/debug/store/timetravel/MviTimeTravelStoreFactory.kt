@@ -22,7 +22,7 @@ object MviTimeTravelStoreFactory : MviStoreFactory {
         executorFactory: () -> MviExecutor<State, Action, Result, Label>,
         reducer: MviReducer<State, Result>
     ): MviStore<State, Intent, Label> =
-        MviTimeTravelStore(
+        MviTimeTravelStoreImpl(
             name = name,
             initialState = initialState,
             bootstrapper = bootstrapper,
