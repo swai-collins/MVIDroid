@@ -1,6 +1,6 @@
 package com.arkivanov.mvikotlin.core.reaktive.store
 
-import com.arkivanov.mvikotlin.base.observer.mviObserver
+import com.arkivanov.mvikotlin.base.observable.mviObserver
 import com.arkivanov.mvikotlin.base.store.MviStore
 import com.badoo.reaktive.disposable.disposable
 import com.badoo.reaktive.observable.Observable

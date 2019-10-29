@@ -1,6 +1,6 @@
 package com.arkivanov.mvikotlin.base.store
 
-import com.arkivanov.mvikotlin.base.observer.MviObserver
+import com.arkivanov.mvikotlin.base.observable.MviObserver
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.atomic.AtomicReference

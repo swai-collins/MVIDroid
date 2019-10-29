@@ -1,6 +1,6 @@
 package com.arkivanov.mvikotlin.core.debug.store.test
 
-import com.arkivanov.mvikotlin.base.observer.MviObserver
+import com.arkivanov.mvikotlin.base.observable.MviObserver
 
 class TestObserver<T>(
     private var skipFirstValue: Boolean = false

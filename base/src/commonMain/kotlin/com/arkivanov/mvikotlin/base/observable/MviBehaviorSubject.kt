@@ -1,0 +1,36 @@
+package com.arkivanov.mvikotlin.base.observable
+
+import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomic.getAndSet
+import com.badoo.reaktive.utils.atomic.update
+import com.badoo.reaktive.utils.atomic.updateAndGet
+
+class MviBehaviorSubject<T>(initialValue: T) : MviObservable<T> {
+
+    private val observers = AtomicReference<List<MviObserver<T>>>(emptyList())
+    private val _value = AtomicReference(initialValue)
+    val value: T get() = _value.value
+
+    override fun subscribe(observer: MviObserver<T>) {
+        val currentValue = _value.value
+
+        observers
+            .updateAndGet { it + observer }
+            .forEach { it.onNext(currentValue) }
+    }
+
+    override fun unsubscribe(observer: MviObserver<T>) {
+        observers.update { it - observer }
+    }
+
+    fun onNext(value: T) {
+        _value.value = value
+        observers.value.forEach { it.onNext(value) }
+    }
+
+    fun onComplete() {
+        observers
+            .getAndSet(emptyList())
+            .forEach(MviObserver<*>::onComplete)
+    }
+}

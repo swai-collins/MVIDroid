@@ -1,10 +1,7 @@
 package com.arkivanov.mvikotlin.core.debug.store.timetravel
 
-import com.arkivanov.mvikotlin.base.observer.MviObserver
-import com.arkivanov.mvikotlin.base.observer.MviObservers
-import com.arkivanov.mvikotlin.base.observer.minusAssign
-import com.arkivanov.mvikotlin.base.observer.mviObserver
-import com.arkivanov.mvikotlin.base.observer.plusAssign
+import com.arkivanov.mvikotlin.base.observable.mviObserver
+import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.arkivanov.mvikotlin.core.debug.store.MviEventType
 import com.badoo.reaktive.utils.atomic.AtomicReference
@@ -23,42 +20,20 @@ import com.badoo.reaktive.utils.atomic.update
  */
 object MviTimeTravelController {
 
-    @Suppress("ObjectPropertyName")
-    private val _events = AtomicReference(MviTimeTravelEvents())
-    private val eventsObservers = MviObservers<MviTimeTravelEvents>(emptyList())
-    @Suppress("ObjectPropertyName")
-    private val _state = AtomicReference(MviTimeTravelState.IDLE)
-    private val stateObservers = MviObservers<MviTimeTravelState>(emptyList())
+    private val statesSubject = MviBehaviorSubject(MviTimeTravelState.IDLE)
+    private val eventsSubject = MviBehaviorSubject(MviTimeTravelEvents())
     private val postponedEvents = ArrayList<MviTimeTravelEvent>()
     private val stores = AtomicReference<Map<String, MviTimeTravelStore<*, *, *, *, *>>>(emptyMap())
 
     /**
      * Returns current time travel state, see [MviTimeTravelState] for more information
      */
-    val state: MviTimeTravelState get() = _state.value
+    val state: MviTimeTravelState get() = statesSubject.value
 
     /**
      * Returns current time travel events, see [MviTimeTravelEvents] for more information
      */
-    val events: MviTimeTravelEvents get() = _events.value
-
-    fun addEventsObserver(observer: MviObserver<MviTimeTravelEvents>) {
-        eventsObservers += observer
-        observer.onNext(_events.value)
-    }
-
-    fun removeEventsObserver(observer: MviObserver<MviTimeTravelEvents>) {
-        eventsObservers -= observer
-    }
-
-    fun addStateObserver(observer: MviObserver<MviTimeTravelState>) {
-        stateObservers += observer
-        observer.onNext(_state.value)
-    }
-
-    fun removeStateObserver(observer: MviObserver<MviTimeTravelState>) {
-        stateObservers -= observer
-    }
+    val events: MviTimeTravelEvents get() = eventsSubject.value
 
     internal fun <State : Any, Intent : Any, Action : Any, Result : Any, Label : Any> attachStore(
         store: MviTimeTravelStore<State, Intent, Action, Result, Label>,
@@ -72,7 +47,7 @@ object MviTimeTravelController {
             stores.update { it + (storeName to store) }
         }
 
-        store.addEventObserver(
+        store.eventOutput.subscribe(
             mviObserver(
                 onNext = ::onEvent,
                 onComplete = { stores.update { it - storeName } }
@@ -89,8 +64,8 @@ object MviTimeTravelController {
         assertOnMainThread()
 
         if (events.items.isNotEmpty()) {
-            _state.value = MviTimeTravelState.STOPPED
-            _events.value = events.copy(index = -1)
+            statesSubject.onNext(MviTimeTravelState.STOPPED)
+            eventsSubject.onNext(events.copy(index = -1))
             moveToEnd()
         }
     }
@@ -102,7 +77,7 @@ object MviTimeTravelController {
         assertOnMainThread()
 
         if (state === MviTimeTravelState.IDLE) {
-            _state.value = MviTimeTravelState.RECORDING
+            statesSubject.onNext(MviTimeTravelState.RECORDING)
         }
     }
 
@@ -114,7 +89,7 @@ object MviTimeTravelController {
         assertOnMainThread()
 
         if (state === MviTimeTravelState.RECORDING) {
-            _state.value = if (events.items.isNotEmpty()) MviTimeTravelState.STOPPED else MviTimeTravelState.IDLE
+            statesSubject.onNext(if (events.items.isNotEmpty()) MviTimeTravelState.STOPPED else MviTimeTravelState.IDLE)
         }
     }
 
@@ -169,9 +144,9 @@ object MviTimeTravelController {
         assertOnMainThread()
 
         if (state !== MviTimeTravelState.IDLE) {
-            _events.value = MviTimeTravelEvents()
+            eventsSubject.onNext(MviTimeTravelEvents())
             val oldState = state
-            _state.value = MviTimeTravelState.IDLE
+            statesSubject.onNext(MviTimeTravelState.IDLE)
 
             if (oldState !== MviTimeTravelState.RECORDING) {
                 stores.value.values.forEach(MviTimeTravelStore<*, *, *, *, *>::restoreState)
@@ -204,7 +179,7 @@ object MviTimeTravelController {
     private fun onEvent(event: MviTimeTravelEvent) {
         when {
             state === MviTimeTravelState.RECORDING -> {
-                _events.value = events.copy(items = events.items + event, index = events.items.size)
+                eventsSubject.onNext(events.copy(items = events.items + event, index = events.items.size))
                 process(event)
             }
 
@@ -277,7 +252,7 @@ object MviTimeTravelController {
         }
 
         if (publish) {
-            _events.value = events.copy(index = to)
+            eventsSubject.onNext(events.copy(index = to))
         }
     }
 

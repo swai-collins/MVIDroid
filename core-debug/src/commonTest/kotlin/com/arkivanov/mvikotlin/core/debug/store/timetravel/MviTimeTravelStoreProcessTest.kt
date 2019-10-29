@@ -105,7 +105,7 @@ class MviTimeTravelStoreProcessTest {
         val executors = ExecutorQueue(TestExecutor(), newExecutor)
         val store = store(executorFactory = executors::next)
         val stateObserver = TestObserver<String>(skipFirstValue = true)
-        store.addStateObserver(stateObserver)
+        store.stateOutput.subscribe(stateObserver)
 
         store.eventDebugger.debug(env.createActionEvent())
         newExecutor.resultConsumer("result")
@@ -131,7 +131,7 @@ class MviTimeTravelStoreProcessTest {
         val executors = ExecutorQueue(TestExecutor(), newExecutor)
         val store = store(executorFactory = executors::next)
         val labelObserver = TestObserver<String>()
-        store.addLabelObserver(labelObserver)
+        store.labelOutput.subscribe(labelObserver)
 
         store.eventDebugger.debug(env.createActionEvent())
         newExecutor.labelConsumer("label")
@@ -175,7 +175,7 @@ class MviTimeTravelStoreProcessTest {
         val executors = ExecutorQueue(TestExecutor(), TestExecutor())
         val store = store(executorFactory = executors::next)
         val stateObserver = TestObserver<String>(skipFirstValue = true)
-        store.addStateObserver(stateObserver)
+        store.stateOutput.subscribe(stateObserver)
 
         store.eventDebugger.debug(env.createResultEvent(state = "old_state"))
 
@@ -205,7 +205,7 @@ class MviTimeTravelStoreProcessTest {
     fun label_emitted_WHEN_debug_label() {
         val store = store()
         val labelObserver = TestObserver<String>()
-        store.addLabelObserver(labelObserver)
+        store.labelOutput.subscribe(labelObserver)
 
         store.eventDebugger.debug(env.createLabelEvent())
 

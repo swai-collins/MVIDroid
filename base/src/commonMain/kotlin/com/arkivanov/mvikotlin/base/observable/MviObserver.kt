@@ -1,4 +1,4 @@
-package com.arkivanov.mvikotlin.base.observer
+package com.arkivanov.mvikotlin.base.observable
 
 interface MviObserver<in T> {
 
