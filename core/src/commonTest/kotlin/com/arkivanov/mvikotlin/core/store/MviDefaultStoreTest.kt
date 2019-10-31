@@ -77,7 +77,7 @@ class MviDefaultStoreTest {
         lateinit var state: String
         val executor = TestExecutor()
         val store = store(executor = executor)
-        store.stateOutput.subscribe(mviObserver(onNext = { state = it }))
+        store.stateOutput.subscribe(mviObserver { state = it })
 
         executor.resultConsumer("result")
 
@@ -89,7 +89,7 @@ class MviDefaultStoreTest {
         lateinit var label: String
         val executor = TestExecutor()
         val store = store(executor = executor)
-        store.labelOutput.subscribe(mviObserver(onNext = { label = it }))
+        store.labelOutput.subscribe(mviObserver { label = it })
 
         executor.labelConsumer("label")
 
@@ -103,7 +103,7 @@ class MviDefaultStoreTest {
         val store = store(executor = executor)
         executor.resultConsumer("result")
 
-        store.stateOutput.subscribe(mviObserver(onNext = { state = it }))
+        store.stateOutput.subscribe(mviObserver { state = it })
 
         assertEquals("result", state)
     }
@@ -115,7 +115,7 @@ class MviDefaultStoreTest {
         val store = store(executor = executor)
         executor.labelConsumer("label")
 
-        store.labelOutput.subscribe(mviObserver(onNext = { label = it }))
+        store.labelOutput.subscribe(mviObserver { label = it })
 
         assertNull(label)
     }
@@ -176,12 +176,10 @@ class MviDefaultStoreTest {
         val store = store(executor = executor)
 
         store.labelOutput.subscribe(
-            mviObserver(
-                onNext = {
-                    store.accept("intent1")
-                    store.accept("intent2")
-                }
-            )
+            mviObserver {
+                store.accept("intent1")
+                store.accept("intent2")
+            }
         )
 
         executor.labelConsumer("label")

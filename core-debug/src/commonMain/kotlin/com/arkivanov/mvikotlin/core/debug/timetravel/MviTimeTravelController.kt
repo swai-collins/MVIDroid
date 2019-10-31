@@ -3,8 +3,8 @@ package com.arkivanov.mvikotlin.core.debug.timetravel
 import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.observable.MviObservable
 import com.arkivanov.mvikotlin.base.observable.mviObserver
-import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.arkivanov.mvikotlin.base.store.MviEventType
+import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.update
 import kotlin.native.concurrent.ThreadLocal
@@ -64,8 +64,8 @@ object MviTimeTravelController {
 
         store.eventOutput.subscribe(
             mviObserver(
-                onNext = MviTimeTravelController::onEvent,
-                onComplete = { stores.update { it - storeName } }
+                onComplete = { stores.update { it - storeName } },
+                onNext = MviTimeTravelController::onEvent
             )
         )
 
