@@ -13,6 +13,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:3.5.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-serialization:$kotlin_version"
     }
 }
 
@@ -53,6 +54,9 @@ void setupMultiplatformProject(Project project) {
 
     project.kotlin {
         sourceSets {
+            jsNativeCommonMain.dependsOn commonMain
+            jsNativeCommonTest.dependsOn commonTest
+
             jvmCommonMain.dependsOn commonMain
             jvmCommonTest.dependsOn commonTest
 
@@ -62,8 +66,8 @@ void setupMultiplatformProject(Project project) {
             androidMain.dependsOn jvmCommonMain
             androidTest.dependsOn jvmCommonTest
 
-            nativeCommonMain.dependsOn commonMain
-            nativeCommonTest.dependsOn commonTest
+            nativeCommonMain.dependsOn jsNativeCommonMain
+            nativeCommonTest.dependsOn jsNativeCommonTest
 
             linuxX64Main.dependsOn nativeCommonMain
             linuxX64Test.dependsOn nativeCommonTest

@@ -1,11 +1,23 @@
+plugins {
+    id 'kotlinx-serialization'
+}
+
 setupMultiplatformProject(project)
 
 kotlin {
+//    jvm("jvmCommon")
+
     sourceSets {
         commonMain {
             dependencies {
-                implementation 'com.badoo.reaktive:utils:1.0.0'
                 api project(':base')
+                implementation 'com.badoo.reaktive:utils:1.0.0'
+            }
+        }
+
+        jvmCommonMain {
+            dependencies {
+                implementation 'org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.13.0'
             }
         }
     }
