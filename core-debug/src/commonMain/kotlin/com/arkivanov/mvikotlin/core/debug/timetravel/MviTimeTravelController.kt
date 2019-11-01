@@ -2,7 +2,7 @@ package com.arkivanov.mvikotlin.core.debug.timetravel
 
 import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.observable.MviObservable
-import com.arkivanov.mvikotlin.base.observable.mviObserver
+import com.arkivanov.mvikotlin.base.observable.subscribe
 import com.arkivanov.mvikotlin.base.store.MviEventType
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.badoo.reaktive.utils.atomic.AtomicReference
@@ -63,10 +63,8 @@ object MviTimeTravelController {
         }
 
         store.eventOutput.subscribe(
-            mviObserver(
-                onComplete = { stores.update { it - storeName } },
-                onNext = MviTimeTravelController::onEvent
-            )
+            onComplete = { stores.update { it - storeName } },
+            onNext = MviTimeTravelController::onEvent
         )
 
         store.init()

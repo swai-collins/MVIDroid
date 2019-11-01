@@ -1,6 +1,6 @@
 package com.arkivanov.mvikotlin.core.store
 
-import com.arkivanov.mvikotlin.base.observable.mviObserver
+import com.arkivanov.mvikotlin.base.observable.subscribe
 import com.arkivanov.mvikotlin.base.store.MviBootstrapper
 import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.mviReducer
@@ -77,7 +77,7 @@ class MviDefaultStoreTest {
         lateinit var state: String
         val executor = TestExecutor()
         val store = store(executor = executor)
-        store.stateOutput.subscribe(mviObserver { state = it })
+        store.stateOutput.subscribe { state = it }
 
         executor.resultConsumer("result")
 
@@ -89,7 +89,7 @@ class MviDefaultStoreTest {
         lateinit var label: String
         val executor = TestExecutor()
         val store = store(executor = executor)
-        store.labelOutput.subscribe(mviObserver { label = it })
+        store.labelOutput.subscribe { label = it }
 
         executor.labelConsumer("label")
 
@@ -103,7 +103,7 @@ class MviDefaultStoreTest {
         val store = store(executor = executor)
         executor.resultConsumer("result")
 
-        store.stateOutput.subscribe(mviObserver { state = it })
+        store.stateOutput.subscribe { state = it }
 
         assertEquals("result", state)
     }
@@ -115,7 +115,7 @@ class MviDefaultStoreTest {
         val store = store(executor = executor)
         executor.labelConsumer("label")
 
-        store.labelOutput.subscribe(mviObserver { label = it })
+        store.labelOutput.subscribe { label = it }
 
         assertNull(label)
     }
@@ -143,7 +143,7 @@ class MviDefaultStoreTest {
     fun state_observer_completed_WHEN_store_disposed() {
         var isComplete = false
         val store = store()
-        store.stateOutput.subscribe(mviObserver(onComplete = { isComplete = true }))
+        store.stateOutput.subscribe(onComplete = { isComplete = true })
 
         store.dispose()
 
@@ -154,7 +154,7 @@ class MviDefaultStoreTest {
     fun label_observer_completed_WHEN_store_disposed() {
         var isComplete = false
         val store = store()
-        store.labelOutput.subscribe(mviObserver(onComplete = { isComplete = true }))
+        store.labelOutput.subscribe(onComplete = { isComplete = true })
 
         store.dispose()
 
@@ -175,12 +175,10 @@ class MviDefaultStoreTest {
 
         val store = store(executor = executor)
 
-        store.labelOutput.subscribe(
-            mviObserver {
-                store.accept("intent1")
-                store.accept("intent2")
-            }
-        )
+        store.labelOutput.subscribe {
+            store.accept("intent1")
+            store.accept("intent2")
+        }
 
         executor.labelConsumer("label")
 

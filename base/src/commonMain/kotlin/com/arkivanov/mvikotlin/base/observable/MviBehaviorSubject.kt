@@ -11,16 +11,16 @@ class MviBehaviorSubject<T>(initialValue: T) : MviObservable<T> {
     private val _value = AtomicReference(initialValue)
     val value: T get() = _value.value
 
-    override fun subscribe(observer: MviObserver<T>) {
+    override fun subscribe(observer: MviObserver<T>): MviDisposable {
         val currentValue = _value.value
 
         observers
             .updateAndGet { it + observer }
             .forEach { it.onNext(currentValue) }
-    }
 
-    override fun unsubscribe(observer: MviObserver<T>) {
-        observers.update { it - observer }
+        return mviDisposable {
+            observers.update { it - observer }
+        }
     }
 
     fun onNext(value: T) {

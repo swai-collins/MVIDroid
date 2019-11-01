@@ -8,12 +8,12 @@ class MviPublishSubject<T> : MviObservable<T> {
 
     private val observers = AtomicReference<List<MviObserver<T>>>(emptyList())
 
-    override fun subscribe(observer: MviObserver<T>) {
+    override fun subscribe(observer: MviObserver<T>): MviDisposable {
         observers.update { it + observer }
-    }
 
-    override fun unsubscribe(observer: MviObserver<T>) {
-        observers.update { it - observer }
+        return mviDisposable {
+            observers.update { it - observer }
+        }
     }
 
     fun onNext(value: T) {
