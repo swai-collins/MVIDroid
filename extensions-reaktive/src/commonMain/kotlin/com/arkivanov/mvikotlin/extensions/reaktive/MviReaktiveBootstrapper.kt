@@ -1,4 +1,4 @@
-package com.arkivanov.mvikotlin.core.reaktive.store
+package com.arkivanov.mvikotlin.extensions.reaktive
 
 import com.arkivanov.mvikotlin.base.store.MviBootstrapper
 import com.badoo.reaktive.disposable.CompositeDisposable

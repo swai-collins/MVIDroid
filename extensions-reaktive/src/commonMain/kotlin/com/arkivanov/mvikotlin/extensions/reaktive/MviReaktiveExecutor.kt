@@ -1,11 +1,11 @@
-package com.arkivanov.mvikotlin.core.reaktive.store
+package com.arkivanov.mvikotlin.extensions.reaktive
 
 import com.arkivanov.mvikotlin.base.store.MviAbstractExecutor
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 
-abstract class MviReaktiveExecutor<State : Any, in Action : Any, Result : Any, Label : Any>
-    : MviAbstractExecutor<State, Action, Result, Label>() {
+abstract class MviReaktiveExecutor<State : Any, in Action : Any, Result : Any, Label : Any> :
+    MviAbstractExecutor<State, Action, Result, Label>() {
 
     private val disposables = CompositeDisposable()
 

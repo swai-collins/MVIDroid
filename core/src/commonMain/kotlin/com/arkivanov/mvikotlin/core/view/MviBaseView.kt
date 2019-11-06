@@ -7,7 +7,7 @@ import com.arkivanov.mvikotlin.base.view.MviView
 /**
  * Base class for [MviView] implementation
  */
-open class MviBaseView<ViewModel : Any, ViewEvent : Any> : MviView<ViewModel, ViewEvent> {
+open class MviBaseView<ViewModel, ViewEvent> : MviView<ViewModel, ViewEvent> {
 
     private val modelsSubject = MviPublishSubject<ViewModel>()
     protected val models: MviObservable<ViewModel> = modelsSubject

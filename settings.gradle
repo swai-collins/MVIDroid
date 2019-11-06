@@ -1,7 +1,7 @@
 include ':base'
 include ':core'
 include ':core-debug'
-include ':reaktive'
+include ':extensions-reaktive'
 include ':sample:mpp'
 include ':sample:android'
 rootProject.name='MviKotlin'

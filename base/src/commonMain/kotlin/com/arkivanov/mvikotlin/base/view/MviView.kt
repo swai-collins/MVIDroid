@@ -9,7 +9,7 @@ import com.arkivanov.mvikotlin.base.observable.MviObservable
  * @param ViewModel type of View Model, typically a data class
  * @param ViewEvent type of View Events
  */
-interface MviView<in ViewModel : Any, out ViewEvent : Any> {
+interface MviView<in ViewModel, out ViewEvent> {
 
     /**
      * Observable of View Events, emissions must be performed only on Main thread
