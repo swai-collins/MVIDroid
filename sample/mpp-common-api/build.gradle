@@ -1,0 +1,9 @@
+setupMultiplatformProject(project)
+
+apply plugin: 'com.squareup.sqldelight'
+
+sqldelight {
+    TodoDatabase {
+        packageName = 'com.arkivanov.mvikotlin.sample.mpp.common'
+    }
+}

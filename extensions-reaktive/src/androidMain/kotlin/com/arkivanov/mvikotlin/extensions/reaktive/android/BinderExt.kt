@@ -7,8 +7,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.arkivanov.mvikotlin.extensions.reaktive.Binder
 
 fun Binder.attachTo(lifecycle: Lifecycle) {
-    asLifecycleObserver(lifecycle.currentState)
-        ?.also(lifecycle::addObserver)
+    lifecycle.attachBinder(this)
 }
 
 internal fun Binder.asLifecycleObserver(currentState: Lifecycle.State): LifecycleObserver? =

@@ -1,0 +1,16 @@
+CREATE TABLE TodoItemDb (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    text TEXT,
+    isDone INTEGER AS Boolean NOT NULL
+);
+
+selectAll:
+SELECT * FROM TodoItemDb;
+
+delete:
+DELETE FROM TodoItemDb WHERE id = ?;
+
+toggleDone:
+UPDATE TodoItemDb
+SET isDone = CASE isDone WHEN 0 THEN 1 ELSE 0 END
+WHERE id = ?;

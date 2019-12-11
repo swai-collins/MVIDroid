@@ -1,0 +1,13 @@
+setupMultiplatformProject(project)
+
+apply plugin: 'com.squareup.sqldelight'
+
+kotlin {
+    sourceSets {
+        commonMain {
+            dependencies {
+                implementation 'com.badoo.reaktive:reaktive:1.0.2'
+            }
+        }
+    }
+}
