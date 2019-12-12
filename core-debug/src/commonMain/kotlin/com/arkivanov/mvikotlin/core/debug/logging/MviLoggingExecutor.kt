@@ -1,7 +1,7 @@
 package com.arkivanov.mvikotlin.core.debug.logging
 
-import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.MviEventType
+import com.arkivanov.mvikotlin.base.store.MviExecutor
 
 internal class MviLoggingExecutor<in State : Any, in Action : Any, out Result : Any, out Label : Any>(
     private val delegate: MviExecutor<State, Action, Result, Label>,

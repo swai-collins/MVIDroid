@@ -3,22 +3,20 @@ package com.arkivanov.mvikotlin.core.debug.timetravel
 import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.observable.MviObservable
 import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
-import com.arkivanov.mvikotlin.base.store.MviBootstrapper
+import com.arkivanov.mvikotlin.base.store.MviEventType
 import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.MviReducer
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
-import com.arkivanov.mvikotlin.base.store.MviEventType
 import com.arkivanov.mvikotlin.core.debug.timetravel.MviTimeTravelStore.EventDebugger
 import com.arkivanov.mvikotlin.core.debug.timetravel.MviTimeTravelStore.EventProcessor
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.atomic.AtomicReference
+import com.badoo.reaktive.utils.atomic.update
 
-internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Label : Any, Action : Any, Result : Any>(
+internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Label : Any, Result : Any>(
     private val name: String,
     initialState: State,
-    private val bootstrapper: MviBootstrapper<Action>?,
-    private val intentToAction: (Intent) -> Action,
-    private val executorFactory: () -> MviExecutor<State, Action, Result, Label>,
+    private val executorFactory: () -> MviExecutor<State, Intent, Result, Label>,
     private val reducer: MviReducer<State, Result>
 ) : MviTimeTravelStore<State, Intent, Label> {
 
@@ -54,7 +52,6 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
     override fun dispose() {
         doIfNotDisposed {
             _isDisposed.value = true
-            bootstrapper?.dispose()
             executor.dispose()
 
             stateSubject.onComplete()
@@ -73,7 +70,6 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
             labelConsumer = { onEvent(MviEventType.LABEL, it) }
         )
 
-        bootstrapper?.bootstrap { onEvent(MviEventType.ACTION, it) }
     }
 
     override fun restoreState() {
@@ -102,7 +98,6 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
             doIfNotDisposed {
                 when (type) {
                     MviEventType.INTENT -> processIntent(value as Intent)
-                    MviEventType.ACTION -> processAction(value as Action)
                     MviEventType.RESULT -> processResult(value as Result)
                     MviEventType.STATE -> processState(value as State)
                     MviEventType.LABEL -> processLabel(value as Label)
@@ -111,11 +106,7 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
         }
 
         private fun processIntent(intent: Intent) {
-            onEvent(MviEventType.ACTION, intentToAction(intent))
-        }
-
-        private fun processAction(action: Action) {
-            executor.executeAction(action)
+            executor.execute(intent)
         }
 
         private fun processResult(result: Result) {
@@ -140,19 +131,14 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
             assertOnMainThread()
 
             when (event.type) {
-                MviEventType.INTENT -> debugIntent(event.value as Intent)
-                MviEventType.ACTION -> debugAction(event.value as Action, event.state as State)
+                MviEventType.INTENT -> debugIntent(event.value as Intent, event.state as State)
                 MviEventType.RESULT -> debugResult(event.value as Result, event.state as State)
                 MviEventType.STATE -> throw IllegalArgumentException("Can't debug event: $event")
                 MviEventType.LABEL -> debugLabel(event.value as Label)
             }
         }
 
-        private fun debugIntent(intent: Intent) {
-            intentToAction(intent)
-        }
-
-        private fun debugAction(action: Action, initialState: State) {
+        private fun debugIntent(intent: Intent, initialState: State) {
             val localState = AtomicReference(initialState)
             executorFactory()
                 .apply {
@@ -161,15 +147,17 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
                             assertOnMainThread()
                             localState.value
                         },
-                        resultConsumer = {
+                        resultConsumer = { result ->
                             doIfNotDisposed {
-                                localState.value = with(reducer) { localState.value.reduce(it) }
+                                localState.update { state ->
+                                    reducer.run { state.reduce(result) }
+                                }
                             }
                         },
                         labelConsumer = { assertOnMainThread() }
                     )
                 }
-                .executeAction(action)
+                .execute(intent)
         }
 
         private fun debugResult(result: Result, initialState: State) {

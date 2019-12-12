@@ -4,18 +4,24 @@ import com.arkivanov.mvikotlin.base.store.MviAbstractExecutor
 import com.badoo.reaktive.disposable.CompositeDisposable
 import com.badoo.reaktive.disposable.Disposable
 
-abstract class MviReaktiveExecutor<State : Any, in Action : Any, Result : Any, Label : Any> :
-    MviAbstractExecutor<State, Action, Result, Label>() {
+open class MviReaktiveExecutor<State : Any, in Intent : Any, Result : Any, Label : Any> :
+    MviAbstractExecutor<State, Intent, Result, Label>() {
 
     private val disposables = CompositeDisposable()
-
-    final override fun executeAction(action: Action) {
-        execute(action)?.also(disposables::add)
-    }
 
     override fun dispose() {
         disposables.dispose()
     }
 
-    abstract fun execute(action: Action): Disposable?
+    override fun bootstrap() {
+    }
+
+    override fun execute(intent: Intent) {
+    }
+
+    protected fun <T : Disposable> T.scope(): T {
+        disposables += this
+
+        return this
+    }
 }

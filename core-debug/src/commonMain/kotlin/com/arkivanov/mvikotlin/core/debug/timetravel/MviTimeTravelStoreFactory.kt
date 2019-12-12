@@ -1,6 +1,5 @@
 package com.arkivanov.mvikotlin.core.debug.timetravel
 
-import com.arkivanov.mvikotlin.base.store.MviBootstrapper
 import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.MviReducer
 import com.arkivanov.mvikotlin.base.store.MviStore
@@ -14,21 +13,17 @@ import com.arkivanov.mvikotlin.base.store.MviStoreFactory
  */
 object MviTimeTravelStoreFactory : MviStoreFactory {
 
-    override fun <State : Any, Intent : Any, Label : Any, Action : Any, Result : Any> create(
+    override fun <State : Any, Intent : Any, Label : Any, Result : Any> create(
         name: String,
         initialState: State,
-        bootstrapper: MviBootstrapper<Action>?,
-        intentToAction: (Intent) -> Action,
-        executorFactory: () -> MviExecutor<State, Action, Result, Label>,
+        executorFactory: () -> MviExecutor<State, Intent, Result, Label>,
         reducer: MviReducer<State, Result>
     ): MviStore<State, Intent, Label> =
         MviTimeTravelStoreImpl(
             name = name,
             initialState = initialState,
-            bootstrapper = bootstrapper,
-            intentToAction = intentToAction,
             executorFactory = executorFactory,
             reducer = reducer
         )
-//            .also { MviTimeTravelController.attachStore(it, name) }
+            .also { MviTimeTravelController.attachStore(it, name) }
 }

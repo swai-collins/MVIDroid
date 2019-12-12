@@ -2,12 +2,15 @@ package com.arkivanov.mvikotlin.base.store
 
 interface MviStoreFactory {
 
-    fun <State : Any, Intent : Any, Label : Any, Action : Any, Result : Any> create(
+    fun <State : Any, Intent : Any, Label : Any, Result : Any> create(
         name: String,
         initialState: State,
-        bootstrapper: MviBootstrapper<Action>? = null,
-        intentToAction: (Intent) -> Action,
-        executorFactory: () -> MviExecutor<State, Action, Result, Label>,
-        reducer: MviReducer<State, Result> = mviReducer { this }
+        executorFactory: () -> MviExecutor<State, Intent, Result, Label>,
+        @Suppress("UNCHECKED_CAST")
+        reducer: MviReducer<State, Result> = bypassReducer as MviReducer<State, Result>
     ): MviStore<State, Intent, Label>
+
+    private companion object {
+        private val bypassReducer = mviReducer<Any, Any> { this }
+    }
 }

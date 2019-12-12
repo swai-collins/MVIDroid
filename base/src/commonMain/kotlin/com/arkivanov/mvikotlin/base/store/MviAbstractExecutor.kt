@@ -1,6 +1,6 @@
 package com.arkivanov.mvikotlin.base.store
 
-abstract class MviAbstractExecutor<State : Any, in Action : Any, Result : Any, Label : Any> : MviExecutor<State, Action, Result, Label> {
+abstract class MviAbstractExecutor<State : Any, in Intent : Any, Result : Any, Label : Any> : MviExecutor<State, Intent, Result, Label> {
 
     private var isInitialized: Boolean = false
     private lateinit var stateSupplier: () -> State
@@ -15,10 +15,8 @@ abstract class MviAbstractExecutor<State : Any, in Action : Any, Result : Any, L
     /**
      * Called internally by Store
      */
-    override fun init(stateSupplier: () -> State, resultConsumer: (Result) -> Unit, labelConsumer: (Label) -> Unit) {
-        if (isInitialized) {
-            throw IllegalStateException("MviExecutor cannot be reused, please make sure that it is not a singleton")
-        }
+    final override fun init(stateSupplier: () -> State, resultConsumer: (Result) -> Unit, labelConsumer: (Label) -> Unit) {
+        check(!isInitialized) { "MviExecutor cannot be reused, please make sure that it is not a singleton" }
 
         isInitialized = true
         this.stateSupplier = stateSupplier

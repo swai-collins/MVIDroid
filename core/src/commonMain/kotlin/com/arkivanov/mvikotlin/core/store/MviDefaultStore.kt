@@ -1,20 +1,17 @@
 package com.arkivanov.mvikotlin.core.store
 
+import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.observable.MviObservable
-import com.arkivanov.mvikotlin.base.store.MviBootstrapper
+import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
 import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.MviReducer
 import com.arkivanov.mvikotlin.base.store.MviStore
-import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
-import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 
-internal class MviDefaultStore<out State : Any, in Intent : Any, out Label : Any, Action : Any, Result : Any>(
+internal class MviDefaultStore<out State : Any, in Intent : Any, out Label : Any, Result : Any>(
     initialState: State,
-    private val bootstrapper: MviBootstrapper<Action>?,
-    private val intentToAction: (Intent) -> Action,
-    private val executor: MviExecutor<State, Action, Result, Label>,
+    private val executor: MviExecutor<State, Intent, Result, Label>,
     private val reducer: MviReducer<State, Result>
 ) : MviStore<State, Intent, Label> {
 
@@ -42,23 +39,18 @@ internal class MviDefaultStore<out State : Any, in Intent : Any, out Label : Any
             labelConsumer = ::onLabel
         )
 
-        bootstrapper?.bootstrap {
-            doIfNotDisposed {
-                executor.executeAction(it)
-            }
-        }
+        executor.bootstrap()
     }
 
     override fun accept(intent: Intent) {
         doIfNotDisposed {
-            executor.executeAction(intentToAction(intent))
+            executor.execute(intent)
         }
     }
 
     override fun dispose() {
         doIfNotDisposed {
             _isDisposed.value = true
-            bootstrapper?.dispose()
             executor.dispose()
 
             stateSubject.onComplete()
