@@ -1,16 +1,29 @@
-package com.arkivanov.mvikotlin.extensions.reaktive.android
+package com.arkivanov.mvikotlin.base.bind
 
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
-import com.arkivanov.mvikotlin.extensions.reaktive.Binder
 
-fun Binder.attachTo(lifecycle: Lifecycle) {
-    lifecycle.attachBinder(this)
+fun Lifecycle.attachBinder(binder: Binder) {
+    binder
+        .asLifecycleObserver(currentState)
+        ?.also(::addObserver)
 }
 
-internal fun Binder.asLifecycleObserver(currentState: Lifecycle.State): LifecycleObserver? =
+fun LifecycleOwner.attachBinder(binder: Binder) {
+    lifecycle.attachBinder(binder)
+}
+
+operator fun Lifecycle.plusAssign(binder: Binder) {
+    attachBinder(binder)
+}
+
+operator fun LifecycleOwner.plusAssign(binder: Binder) {
+    attachBinder(binder)
+}
+
+private fun Binder.asLifecycleObserver(currentState: Lifecycle.State): LifecycleObserver? =
     when (currentState) {
         Lifecycle.State.DESTROYED -> null
 
