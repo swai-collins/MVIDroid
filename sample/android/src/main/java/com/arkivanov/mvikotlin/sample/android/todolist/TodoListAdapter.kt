@@ -18,24 +18,9 @@ class TodoListAdapter(
     private var items: List<TodoItem> = emptyList()
 
     fun setItems(items: List<TodoItem>) {
-        val oldItems = items
+        val oldItems = this.items
         this.items = items
-
-        DiffUtil
-            .calculateDiff(
-                object : DiffUtil.Callback() {
-                    override fun getOldListSize(): Int = oldItems.size
-
-                    override fun getNewListSize(): Int = items.size
-
-                    override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                        oldItems[oldItemPosition].id == items[newItemPosition].id
-
-                    override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                        oldItems[oldItemPosition] == items[newItemPosition]
-                }
-            )
-            .dispatchUpdatesTo(this)
+        diff(oldItems, items, this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
@@ -45,6 +30,26 @@ class TodoListAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.bind(items[position])
+    }
+
+    private companion object {
+        private fun diff(oldItems: List<TodoItem>, newItems: List<TodoItem>, adapter: TodoListAdapter) {
+            DiffUtil
+                .calculateDiff(
+                    object : DiffUtil.Callback() {
+                        override fun getOldListSize(): Int = oldItems.size
+
+                        override fun getNewListSize(): Int = newItems.size
+
+                        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+                            oldItems[oldItemPosition].id == newItems[newItemPosition].id
+
+                        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
+                            oldItems[oldItemPosition] == newItems[newItemPosition]
+                    }
+                )
+                .dispatchUpdatesTo(adapter)
+        }
     }
 
     interface Listener {

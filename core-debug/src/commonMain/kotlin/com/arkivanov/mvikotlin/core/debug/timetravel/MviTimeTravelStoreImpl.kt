@@ -70,6 +70,7 @@ internal class MviTimeTravelStoreImpl<out State : Any, in Intent : Any, out Labe
             labelConsumer = { onEvent(MviEventType.LABEL, it) }
         )
 
+        executor.bootstrap()
     }
 
     override fun restoreState() {

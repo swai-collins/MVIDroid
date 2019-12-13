@@ -48,13 +48,6 @@ internal class ReaktiveTodoListStoreFactory(
                 .subscribeOn(ioScheduler)
                 .flatMapObservable { it.asObservable() }
                 .map(Query<TodoItem>::executeAsList)
-                .map {
-                    listOf(
-                        TodoItem(id = 1L, text = "Kek1", isDone = false),
-                        TodoItem(id = 2L, text = "Kek2", isDone = true),
-                        TodoItem(id = 3L, text = "Kek3", isDone = false)
-                    )
-                }
                 .map(Result::Items)
                 .observeOn(mainScheduler)
                 .subscribe(isThreadLocal = true, onNext = ::dispatch)

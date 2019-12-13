@@ -14,12 +14,12 @@ class TodoListActivity : AppCompatActivity() {
 
         setContentView(R.layout.todo_list)
 
-        ReaktiveTodoListBinder
-            .bind(
-                storeFactory = app.storeFactory,
-                queries = app.todoDatabase.todoItemQueries,
-                view = TodoListViewImpl(findViewById(android.R.id.content))
-            )
+        ReaktiveTodoListBinder(
+            storeFactory = app.storeFactory,
+            queries = app.todoDatabase.todoItemQueries
+        )
+            .attachTo(lifecycle)
+            .bind(TodoListViewImpl(findViewById(android.R.id.content)))
             .attachTo(lifecycle)
     }
 }
