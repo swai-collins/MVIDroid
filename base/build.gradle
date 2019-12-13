@@ -7,5 +7,12 @@ kotlin {
                 implementation 'com.badoo.reaktive:utils:1.0.0'
             }
         }
+
+        androidMain {
+            dependencies {
+                implementation 'androidx.appcompat:appcompat:1.1.0'
+                implementation "androidx.lifecycle:lifecycle-common-java8:2.1.0"
+            }
+        }
     }
 }
