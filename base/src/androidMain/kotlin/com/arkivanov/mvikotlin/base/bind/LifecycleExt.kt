@@ -4,23 +4,50 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import com.arkivanov.mvikotlin.base.observable.MviDisposable
 
-fun Lifecycle.attachBinder(binder: Binder) {
+fun Lifecycle.attach(binder: Binder) {
     binder
         .asLifecycleObserver(currentState)
         ?.also(::addObserver)
 }
 
-fun LifecycleOwner.attachBinder(binder: Binder) {
-    lifecycle.attachBinder(binder)
+fun LifecycleOwner.attach(binder: Binder) {
+    lifecycle.attach(binder)
 }
 
 operator fun Lifecycle.plusAssign(binder: Binder) {
-    attachBinder(binder)
+    attach(binder)
 }
 
 operator fun LifecycleOwner.plusAssign(binder: Binder) {
-    attachBinder(binder)
+    attach(binder)
+}
+
+fun Binder.attachTo(lifecycle: Lifecycle): Binder {
+    lifecycle.attach(this)
+
+    return this
+}
+
+fun Lifecycle.attach(disposable: MviDisposable) {
+    addObserver(
+        object : DefaultLifecycleObserver {
+            override fun onDestroy(owner: LifecycleOwner) {
+                disposable.dispose()
+            }
+        }
+    )
+}
+
+operator fun Lifecycle.plusAssign(disposable: MviDisposable) {
+    attach(disposable)
+}
+
+fun <T : MviDisposable> T.attachTo(lifecycle: Lifecycle): T {
+    lifecycle.attach(this)
+
+    return this
 }
 
 private fun Binder.asLifecycleObserver(currentState: Lifecycle.State): LifecycleObserver? =
