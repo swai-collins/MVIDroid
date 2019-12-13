@@ -11,6 +11,7 @@ kotlin {
         commonMain {
             dependencies {
                 api project(':base')
+                implementation project(':utils')
                 implementation 'com.badoo.reaktive:utils:1.0.0'
             }
         }

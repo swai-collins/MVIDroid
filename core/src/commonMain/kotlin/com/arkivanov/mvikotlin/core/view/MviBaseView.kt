@@ -1,8 +1,8 @@
 package com.arkivanov.mvikotlin.core.view
 
 import com.arkivanov.mvikotlin.base.observable.MviObservable
-import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
 import com.arkivanov.mvikotlin.base.view.MviView
+import com.arkivanov.mvikotlin.utils.observable.MviPublishSubject
 
 /**
  * Base class for [MviView] implementation

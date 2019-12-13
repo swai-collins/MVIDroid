@@ -1,12 +1,12 @@
 package com.arkivanov.mvikotlin.core.store
 
-import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.observable.MviObservable
-import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
 import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.MviReducer
 import com.arkivanov.mvikotlin.base.store.MviStore
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
+import com.arkivanov.mvikotlin.utils.observable.MviBehaviorSubject
+import com.arkivanov.mvikotlin.utils.observable.MviPublishSubject
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 
 internal class MviDefaultStore<out State : Any, in Intent : Any, out Label : Any, Result : Any>(

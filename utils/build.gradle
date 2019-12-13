@@ -6,7 +6,6 @@ kotlin {
             dependencies {
                 implementation 'com.badoo.reaktive:utils:1.0.0'
                 api project(':base')
-                implementation project(':utils')
             }
         }
     }

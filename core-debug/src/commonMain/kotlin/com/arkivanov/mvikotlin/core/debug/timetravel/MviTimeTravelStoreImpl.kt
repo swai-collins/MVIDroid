@@ -1,14 +1,14 @@
 package com.arkivanov.mvikotlin.core.debug.timetravel
 
-import com.arkivanov.mvikotlin.base.observable.MviBehaviorSubject
 import com.arkivanov.mvikotlin.base.observable.MviObservable
-import com.arkivanov.mvikotlin.base.observable.MviPublishSubject
 import com.arkivanov.mvikotlin.base.store.MviEventType
 import com.arkivanov.mvikotlin.base.store.MviExecutor
 import com.arkivanov.mvikotlin.base.store.MviReducer
 import com.arkivanov.mvikotlin.base.utils.assertOnMainThread
 import com.arkivanov.mvikotlin.core.debug.timetravel.MviTimeTravelStore.EventDebugger
 import com.arkivanov.mvikotlin.core.debug.timetravel.MviTimeTravelStore.EventProcessor
+import com.arkivanov.mvikotlin.utils.observable.MviBehaviorSubject
+import com.arkivanov.mvikotlin.utils.observable.MviPublishSubject
 import com.badoo.reaktive.utils.atomic.AtomicBoolean
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.update

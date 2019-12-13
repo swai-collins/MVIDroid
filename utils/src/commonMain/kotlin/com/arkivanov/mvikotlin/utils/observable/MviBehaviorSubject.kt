@@ -1,5 +1,9 @@
-package com.arkivanov.mvikotlin.base.observable
+package com.arkivanov.mvikotlin.utils.observable
 
+import com.arkivanov.mvikotlin.base.observable.MviDisposable
+import com.arkivanov.mvikotlin.base.observable.MviObservable
+import com.arkivanov.mvikotlin.base.observable.MviObserver
+import com.arkivanov.mvikotlin.base.observable.mviDisposable
 import com.badoo.reaktive.utils.atomic.AtomicReference
 import com.badoo.reaktive.utils.atomic.getAndSet
 import com.badoo.reaktive.utils.atomic.update
